@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from  calculate import views
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # Create your views here.
 @csrf_exempt
@@ -10,15 +11,15 @@ def index(request):
         if request.method == 'POST':
             number1 = int(request.POST.get('number1'))
             number2 = int(request.POST.get('number2'))
-            opeation = request.POST.get('operation')
+            operation = request.POST.get('operation')
 
-        if opeation == 'sum':
+        if operation == 'sum':
             ans = number1 + number2
-        elif opeation == 'sub':
+        elif operation == 'sub':
             ans = number1 - number2
-        elif opeation == 'product':
+        elif operation == 'product':
             ans = number1 * number2
-        elif opeation == 'divison':
+        elif operation == 'divison':
             ans = number1 / number2
         else:
             return HttpResponse('Invalid Operation')
@@ -31,4 +32,11 @@ def index(request):
     except Exception as e:
         return HttpResponse(e)
 
-    return HttpResponse(ans)
+    data = {
+        "num1": number1,
+        "num2": number2,
+        "operation": operation,
+        "answer": ans,
+    }
+
+    return JsonResponse(data)
