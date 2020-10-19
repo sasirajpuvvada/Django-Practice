@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Polls Quesion Details Page</title>
+  </head>
+  <body>
+
+    <h1>{{question.question_text}}</h1>
+    <form action = "{% url 'polls:vote' quesion.id %}" method = "post">
+    {% csrf_token %}
+    {% for choice in question.choice_set.all%}
+        
+    </form>
+  </body>
+</html>
