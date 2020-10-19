@@ -16,6 +16,7 @@ def index(request):
     client = MongoClient('localhost',27017)
     db = client['temp']
     news = db['news']
+    newsData = db['newsData']
     while True:
         url = 'https://news.ycombinator.com/news?p='
         pageStr = str(page)
@@ -34,8 +35,32 @@ def index(request):
             time = age[index].get_text()
             value = str(title+" "+link+"   "+scoreValue+"  "+time)
             dict[i] = value
+
+            resLink = requests.get(link)
+            soupLink = bs4.BeautifulSoup(resLink.text,'lxml')
+            try:
+                heading = soupLink.select('title')
+            except:
+                heading = soupLink.select('.title')
+            
+            description = soupLink.select('p')
+
             data = {"title":title, "url":link, "points":scoreValue, "time":time}
-            news.insert_one(data)
+            newsID = news.insert_one(data)
+
+            if len(heading) == 0:
+                heading = ''
+            else:
+                heading = heading[0].get_text()
+            
+            ar = []
+            if len(description) != 0:
+                for val in description:
+                    desc = val.get_text()
+                    ar.append(desc)
+
+            newsDataValues = {"title":heading,"heading":newsID.inserted_id,"description":ar}
+            newsData.insert_one(newsDataValues)
         
         
         moreLink = soup.select('.morelink')
@@ -43,7 +68,6 @@ def index(request):
         if len(moreLink) == 0:
             break
         page = page + 1
-        if page == 2:
-            break
+        
     return JsonResponse(dict)
 
