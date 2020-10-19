@@ -68,6 +68,8 @@ def index(request):
         if len(moreLink) == 0:
             break
         page = page + 1
+        if page == 2:
+            break
         
     return JsonResponse(dict)
 
