@@ -25,5 +25,15 @@ def contact_create_view(request):
     
     return render(request,'contact/contact_create.html',{'form':form})
 
+def contact_edit(request, contact_id):
+    person = Person.objects.get(id= contact_id)
+    if request.method == 'POST':
+        form = PersonForm(request.POST, instance=person)
+        if form.is_valid():
+            form.save()
+            return redirect('/contact/'+str(person.id))
+    else:
+        form = PersonForm(instance=person)
+    return render(request, 'contact/contact_create.html', {'form': form})
 
 
