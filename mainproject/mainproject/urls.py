@@ -22,4 +22,5 @@ urlpatterns = [
     path('calculate/',include('calculate.urls')),
     path('webscrap/',include('webscrap.urls')),
     path('polls/',include('polls.urls')),
+    path('contact/',include('contact.urls')),
 ]

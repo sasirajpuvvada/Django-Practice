@@ -4,7 +4,7 @@ from . import views
 from django.http import Http404
 from django.shortcuts import render
 
-
+app_name = 'polls'
 urlpatterns = [
     path('', views.index,name = 'index'),
     path('<int:question_id>/', views.detail, name='detail'),

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact App</title>
+</head>
+<body>
+    <div>
+        {% for person in persons %}
+            <ul>
+                <li><a href=" {% url 'contact:detail' person.id %}">{{ person.full_name }}</a> <a href=" {% url 'contact:delete' person.id %}">Delete Contact</a></li>
+            </ul>
+        {% endfor %}
+    </div>
+    <br> <br>
+    <a href = "{% url 'contact:create' %}">Add Contact</a>
+
+</body>
+</html>
