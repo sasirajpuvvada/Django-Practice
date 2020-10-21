@@ -10,8 +10,8 @@ from pymongo import MongoClient
 def index(request):
     i = 0
     page = 1
-    dict = {0:'val'}
-    dict.popitem()
+    # dict = {0:'val'}
+    # dict.popitem()
     democlient = MongoClient()
     client = MongoClient('localhost',27017)
     db = client['temp']
@@ -33,8 +33,8 @@ def index(request):
             link = content[index]['href']
             scoreValue = score[index].get_text()
             time = age[index].get_text()
-            value = str(title+" "+link+"   "+scoreValue+"  "+time)
-            dict[i] = value
+            # value = str(title+" "+link+"   "+scoreValue+"  "+time)
+            # dict[i] = value
 
             resLink = requests.get(link)
             soupLink = bs4.BeautifulSoup(resLink.text,'lxml')
@@ -53,13 +53,13 @@ def index(request):
             else:
                 heading = heading[0].get_text()
             
-            ar = []
+            descData = ''
             if len(description) != 0:
                 for val in description:
                     desc = val.get_text()
-                    ar.append(desc)
+                    descData = descData + desc
 
-            newsDataValues = {"title":heading,"heading":newsID.inserted_id,"description":ar}
+            newsDataValues = {"title":heading,"heading":newsID.inserted_id,"description":descData}
             newsData.insert_one(newsDataValues)
         
         
@@ -68,8 +68,7 @@ def index(request):
         if len(moreLink) == 0:
             break
         page = page + 1
-        if page == 2:
-            break
+        
         
     return JsonResponse(dict)
 
