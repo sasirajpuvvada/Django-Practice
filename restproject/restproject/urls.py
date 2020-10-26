@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('article.urls')),
     path('accounts/', include('accounts.urls')),
+    path('recommend/', include('recommend.urls')),
 ]
