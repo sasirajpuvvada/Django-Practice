@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.status import (HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK)
 from django.contrib.auth.models import User
 from .scripts import scrapping
+from .scripts import tf_idf
 
 # Create your views here.
 
@@ -61,4 +62,10 @@ class Login(APIView):
         else:
             return Response('Invalid credentials')
 
-            
+
+class Temp(APIView):
+
+    def get(self, request):
+        tf_idf.letsStart()
+        return Response('done')
+
