@@ -10,8 +10,8 @@ from pymongo import MongoClient
 def index(request):
     i = 0
     page = 1
-    # dict = {0:'val'}
-    # dict.popitem()
+    dict = {0:'val'}
+    dict.popitem()
     democlient = MongoClient()
     client = MongoClient('localhost',27017)
     db = client['temp']
@@ -31,13 +31,20 @@ def index(request):
             i = i + 1
             title = content[index].get_text()
             link = content[index]['href']
+            if 'pdf' in link:
+                print('skipped')
+                continue    
             scoreValue = score[index].get_text()
             time = age[index].get_text()
-            # value = str(title+" "+link+"   "+scoreValue+"  "+time)
-            # dict[i] = value
-
-            resLink = requests.get(link)
-            soupLink = bs4.BeautifulSoup(resLink.text,'lxml')
+            value = str(title+" "+link+"   "+scoreValue+"  "+time)
+            dict[i] = value
+            print(value)
+            try:
+                resLink = requests.get(link)
+                soupLink = bs4.BeautifulSoup(resLink.text,'lxml')
+            except:
+                print("************************************Exception**********************************************8")
+                continue
             try:
                 heading = soupLink.select('title')
             except:
@@ -68,6 +75,9 @@ def index(request):
         if len(moreLink) == 0:
             break
         page = page + 1
+
+        if page == 4:
+            break
         
         
     return JsonResponse(dict)
