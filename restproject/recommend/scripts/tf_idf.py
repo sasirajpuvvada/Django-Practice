@@ -32,7 +32,7 @@ def remove_stop_words(desc):
     return filtered_sentence_string
 
 
-def filterateData():
+def pre_processing():
 
     '''
         removes stop words and special characthers
@@ -44,10 +44,10 @@ def filterateData():
         status = newsVal['status']
         if not status:
             desc = newsVal['description']
-            # print(desc,len(desc))
-            desc = removeSpecialCharacthers(desc)
-            desc = removeStopWords(desc)
-            # print(desc,len(desc))
+            
+            desc = remove_special_characthers(desc)
+            desc = remove_stop_words(desc)
+            
             id = newsVal['_id']
             newsData.update_one({"_id": id}, {"$set": { "description": desc} })
             newsData.update_one({"_id": id}, {"$set": { "status": True} })
@@ -78,7 +78,7 @@ def wordCountDict():
 def calculate_IDF():
 
     '''
-        Adding all words in IDF arrat
+        Adding all words in IDF array
     '''
     for item in WCD:
         for word in WCD[item]['count']:
@@ -92,11 +92,10 @@ def calculate_IDF():
     '''
     size = len(WCD)
     for word, count in IDF.items():
-        IDF[word] = 1 + log(count/size)
+        IDF[word] = 1 + log(size/count)
     
 
 def calculate_Tf_IDF():
-
     for item in WCD:
         tf = WCD[item]['count']
         size = len(tf)
@@ -122,11 +121,70 @@ def calculate():
 def letsStart():
 
     #filtering data
-    # filterateData()
+    pre_processing()
 
     #calculating tf-idf
     calculate()
-    
 
+
+def remove_tokens(words):
+
+    token = []
+    words = words.split(' ')
+    for w in words:
+        token.append(p_stemmer.stem(w))
+    return token
+
+def processTitle(title, words):
+    title = remove_special_characthers(title)
+    title = remove_stop_words(title)
+    title = remove_tokens(title)
+    value = 0
+    for titleWord in title:
+        if titleWord in words:
+            value = value + 1
+    # print(title)
+    return value
+
+
+
+def find_favourites(words):
+    ans = {}
+
+    for key,value in TF_IDF.items():
+        count = 0
+        for word in words:
+            if word in value:
+                count += value[word]
+        
+        wcd = WCD[key]
+        title = wcd['title']
+        url = wcd['url']
+        count += processTitle(title, words)
+        ans.update({url:count})
+        
     
+    favs = sorted(ans.items(), key=lambda x: x[1], reverse = True)
+
+    return favs[:10]
+        
+
+
+
+def get_values():
+    db = client[constants.db]
+    for obj in db['tf_idf'].find():
+        WCD.update(obj['WCD'])
+        TF_IDF.update(obj['TF_IDF'])
+
+
+
+def search(words):
+    words = 'artificial intelligence'
+    get_values()
+    words = remove_special_characthers(words)
+    words = remove_stop_words(words)
+    words = remove_tokens(words)
+    favs = find_favourites(words)
+    return favs
     

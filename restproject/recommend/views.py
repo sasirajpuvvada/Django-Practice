@@ -63,9 +63,17 @@ class Login(APIView):
             return Response('Invalid credentials')
 
 
-class Temp(APIView):
+class Calculate(APIView):
 
     def get(self, request):
         tf_idf.letsStart()
-        return Response('done')
+        return Response('done calculating TF-IDF')
+
+class Search(APIView):
+
+    def get(self, request):
+        # words = request.data.get('words')
+        words = ''
+        links = tf_idf.search(words)
+        return Response(links)
 
