@@ -2,21 +2,18 @@ from . import constants
 from pymongo import MongoClient
 import requests
 import bs4
+from .configurations import client
 
 links = []
 def display():
-    democlient = MongoClient()
-    client = MongoClient('localhost',27017)
     db = client[constants.db]
     news = db[constants.news]
     titles = []
     for val in news.find({}):
-        titles.append(val['title'])
+        titles.append(val['url'])
     return titles
 
 def addNews():
-    democlient = MongoClient()
-    client = MongoClient('localhost',27017)
     db = client[constants.db]
     news = db[constants.news]
     newsData = db[constants.newsData]
@@ -35,7 +32,6 @@ def addNews():
         for index in range(len(score)):
             title = content[index].get_text()
             link = content[index]['href']
-            print(link)
             if 'pdf' in link:
                 print('skipped')
                 continue    

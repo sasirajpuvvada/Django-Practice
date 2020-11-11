@@ -9,4 +9,5 @@ urlpatterns = [
     path('home/', views.MainUrl().as_view()),
     path('calculate/', views.Calculate().as_view()),
     path('articles/', views.Search().as_view()),
+    path('liked/',views.Liked().as_view()),
 ]

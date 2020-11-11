@@ -11,14 +11,18 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.status import (HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK)
 from django.contrib.auth.models import User
+
+
 from .scripts import scrapping
 from .scripts import tf_idf
+from .models import RecommendedArticle, UrlDetails
+
 
 # Create your views here.
 
 class MainUrl(APIView):
 
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     def get(self, request):
         urls = scrapping.display()
         return Response(urls)
@@ -58,7 +62,8 @@ class Login(APIView):
         user = authenticate(username = username, password = password)
         print(user)
         if user is not None:
-            return Response('welcome',user)
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key},status=HTTP_200_OK)
         else:
             return Response('Invalid credentials')
 
@@ -71,9 +76,46 @@ class Calculate(APIView):
 
 class Search(APIView):
 
-    def get(self, request):
-        # words = request.data.get('words')
-        words = ''
-        links = tf_idf.search(words)
+    def post(self, request):
+        words = request.data.get('words')
+        result = tf_idf.search(words)
+        links = []
+        for obj in result:
+            links.append(obj[0])
         return Response(links)
 
+class Liked(APIView):
+
+    permission_classes = (IsAuthenticated,) 
+    def post(self, request):
+
+        curr_user, exists = RecommendedArticle.objects.get_or_create(user = request.user)
+
+        likedArticles = request.data.get('links')
+        top_list = tf_idf.liked_articles(likedArticles)
+        fav_list = list()
+        if  not exists:
+            curr_user.delete()
+            curr_user = RecommendedArticle.objects.create(user = request.user)
+        
+        for obj in top_list:
+            url = obj['url']
+            title = obj['title']
+            uid = obj['url_id']
+            fav_list.append(url)
+            url_obj = UrlDetails(url = url, title = title, uid = uid)
+            url_obj.save()
+            curr_user.liked_urls.add(url_obj)
+            # print(url,title,uid)
+
+        return Response(fav_list)
+
+    def get(self, request):
+
+        curr_user, exists = RecommendedArticle.objects.get_or_create(user = request.user)
+        if not exists:
+            return Response('No Liked Url Exists')
+        sug_urls_data = curr_user.liked_urls.values()
+        sug_urls = [obj['url'] for obj in sug_urls_data]
+        print(sug_urls)
+        return Response(sug_urls)

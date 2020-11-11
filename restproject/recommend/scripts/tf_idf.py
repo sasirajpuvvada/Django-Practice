@@ -5,6 +5,8 @@ from nltk.tokenize import word_tokenize
 from collections import Counter
 from bson.objectid import ObjectId
 from math import log
+from scipy import spatial
+import math
 
 from nltk.stem import SnowballStemmer
 
@@ -180,11 +182,55 @@ def get_values():
 
 
 def search(words):
-    words = 'artificial intelligence'
     get_values()
     words = remove_special_characthers(words)
     words = remove_stop_words(words)
     words = remove_tokens(words)
     favs = find_favourites(words)
     return favs
+
+
+def find_IDS(links):
+    ids = []
+    db = client[constants.db]
+    news = db[constants.news]
+
+    for link in links:
+        ids.append(news.find_one({'url':link})['_id'])
     
+    return ids
+
+def cosine_similarity(doc1):
+    ''' 
+    returns the dictionary of coisne similar docs 
+    '''
+    desired_dict ={}
+    result = 0
+    for doc2 in WCD:
+        tf_idf_doc1 = TF_IDF[doc1]
+        tf_idf_doc2 = TF_IDF[doc2]
+        list1 = []
+        list2 = []
+        x = set(tf_idf_doc2).intersection(tf_idf_doc1)
+        for val in x:
+            list1.append(tf_idf_doc1[val])
+            list2.append(tf_idf_doc2[val])
+        result =  spatial.distance.cosine(list1, list2)
+        if not math.isnan(result) and result < 1:
+            desired_dict[doc2]=result
+    return desired_dict
+
+def liked_articles(links):
+    get_values()
+    fav_list = {}
+    liked_IDS = find_IDS(links)
+    for url in liked_IDS:
+        l = str(url)
+        fav_list.update(cosine_similarity(l))
+    
+    sort_fav_list = {key: value for key, value in sorted(fav_list.items(), key=lambda item: item[1], reverse=True)}
+    temp_list = list()
+    for url_id in list(sort_fav_list)[:10]:
+        temp_list.append({'url':WCD[url_id]['url'], 'title': WCD[url_id]['title'], 'url_id': str(url_id)})
+
+    return temp_list
