@@ -2,8 +2,8 @@ Scrapes the data from https://news.ycombinator.com/
 Recommends the articles based on the user preferences(Liked articles)
 
 Tech:- 
-Postgres - User data
-Mongo - scraped data from new website
+Postgres - User data,
+Mongo - scraped data from new website,
 Django - Web App
 
 
